@@ -3,6 +3,9 @@
   "version": "0.0.2",
   "license": "unlicense",
   "exports": "./src/mod.ts",
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "dom.asynciterable", "deno.ns"]
+  },
   "tasks": {
     "build": "deno run -A build.ts"
   }
