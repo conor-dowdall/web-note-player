@@ -132,8 +132,8 @@ async function loadAudioSpriteFromData(
     const sprite = await fetch(audioSpriteData.url);
     const arrayBuffer = await sprite.arrayBuffer();
     webNoteAudioSprite = await webNoteAudioContext.decodeAudioData(arrayBuffer);
-  } catch (error) {
-    throw new Error(error);
+  } catch (error: any) {
+    throw new Error(error?.message || "Error loading audio sprite");
   }
 }
 
