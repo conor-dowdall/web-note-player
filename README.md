@@ -3,7 +3,7 @@
 A lightweight JavaScript module for playing audio sprite sounds triggered by
 custom events.
 
-**Features:**
+## Features
 
 - Initializes a Web Audio context and loads an audio sprite.
 - Plays specific sounds from the sprite based on `web-note-player-on` custom
@@ -14,12 +14,18 @@ custom events.
 - Handles cross-browser audio playback (though some browser-specific behaviors
   may exist).
 
-**Dependencies:**
+## Dependencies
 
 - An audio sprite file (e.g., `sprite.ogg`).
 - A `sprite-data.ts` file defining the sprite's metadata (URLs and
   instrument/note timings).
 
-**Example:**
+## Examples
 
-See the examples/ directory.
+Build the javascript output module `dist/mod.js`. This step uses esbuild with deno.
+
+```bash
+deno task build
+```
+
+Open [the examples directory](examples/) in a browser, and choose the [basic example](examples/basic-play-notes.html).
