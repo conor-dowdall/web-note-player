@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web Note Player Test</title>
+    <style>
+      html {
+        color-scheme: dark;
+      }
+      #play-buttons {
+        display: flex;
+        gap: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Web Note Player Test</h1>
+
+    <div id="audio-status">
+      <p>Audio status: <span id="audio-status-text">Loading</span></p>
+      <p id="error-display" style="color: red"></p>
+    </div>
+
+    <div id="play-button-area">
+      <button class="play-button" data-midi-note-number="48">
+        Play C4 (Guitar)
+      </button>
+      <button class="play-button" data-midi-note-number="50">
+        Play D4 (Guitar)
+      </button>
+      <button class="play-button" data-midi-note-number="52">
+        Play E4 (Guitar)
+      </button>
+    </div>
+
+    <script type="module">
+      import * as web_note_player from "../dist/mod.js";
+
+      const audioStatusText = document.getElementById(
+        "audio-status-text",
+      );
+      document.body.addEventListener("web-note-player-ready", () => {
+        audioStatusText.textContent = "Ready";
+      });
+
+      web_note_player.initWebNotePlayer();
+
+      const playButtons = document.querySelectorAll(".play-button");
+      playButtons.forEach((playButton) => {
+        playButton.addEventListener("click", () => {
+          playButton.dispatchEvent(
+            new CustomEvent("web-note-player-on", {
+              bubbles: true,
+              detail: {
+                instrumentAudio: "guitar",
+                midiNoteNumber: parseInt(
+                  playButton.dataset.midiNoteNumber,
+                ),
+              },
+            }),
+          );
+        });
+      });
+    </script>
+  </body>
+</html>
