@@ -132,15 +132,15 @@ async function loadAudioSpriteFromData(
     const sprite = await fetch(audioSpriteData.url);
     const arrayBuffer = await sprite.arrayBuffer();
     webNoteAudioSprite = await webNoteAudioContext.decodeAudioData(arrayBuffer);
-  } catch (error: any) {
-    throw new Error(error?.message || "Error loading audio sprite");
+  } catch (error) {
+    throw new Error((error as Error).message || "Error loading audio sprite");
   }
 }
 
 /**
  * Interface for the detail property of the 'web-note-player-on' event.
  */
-interface WebNoteOnEventDetail {
+export interface WebNoteOnEventDetail {
   instrumentAudio: string;
   midiNoteNumber: number;
   uuid?: string;
@@ -152,12 +152,12 @@ interface WebNoteOnEventDetail {
 /**
  * Type for the 'web-note-player-on' CustomEvent.
  */
-type WebNoteOnCustomEvent = CustomEvent<WebNoteOnEventDetail>;
+export type WebNoteOnCustomEvent = CustomEvent<WebNoteOnEventDetail>;
 
 /**
  * Type for the 'web-note-player-off' CustomEvent.
  */
-type WebNoteOffCustomEvent = CustomEvent<{ uuid: string }>;
+export type WebNoteOffCustomEvent = CustomEvent<{ uuid: string }>;
 
 /**
  * Attaches event listeners for 'web-note-player-on' and 'web-note-player-off' events.
