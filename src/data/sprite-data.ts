@@ -1,19 +1,4 @@
-export interface SpriteInstrumentNote {
-  midiNoteNumber: number;
-  noteStart: number;
-  noteDuration: number;
-  loopStart?: number;
-  loopEnd?: number;
-}
-
-export interface SpriteInstruments {
-  [key: string]: SpriteInstrumentNote[];
-}
-
-export interface SpriteData {
-  url: string;
-  instruments: SpriteInstruments;
-}
+import type { SpriteData } from "../types/mod.ts";
 
 export const spriteData: SpriteData = {
   url: "/assets/sprite.ogg",

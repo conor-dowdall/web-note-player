@@ -11,8 +11,6 @@ custom events.
   volume, and delay.
 - Supports looping sounds.
 - Allows stopping currently playing sounds using `web-note-player-off` events.
-- Handles cross-browser audio playback (though some browser-specific behaviors
-  may exist).
 
 ## Dependencies
 
@@ -22,10 +20,12 @@ custom events.
 
 ## Examples
 
-Build the javascript output module `dist/mod.js`. This step uses esbuild with deno.
+Build the javascript output module `dist/mod.js`. This step uses esbuild with
+deno.
 
 ```bash
 deno task build
 ```
 
-Open [the examples directory](examples/) in a browser, and choose the [basic example](examples/basic-play-notes.html).
+Open [the examples directory](examples/) in a browser, and choose the
+[basic example](examples/basic-play-notes.html).

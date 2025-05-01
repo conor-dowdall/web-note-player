@@ -1,87 +1,12 @@
-/**
- * A module for playing musical notes using audio sprites and the Web Audio API.
- *
- * @example
- * ```bash
- * deno task build
- * ```
- * ```html
- * <!DOCTYPE html>
- *<html lang="en">
- *  <head>
- *    <meta charset="UTF-8" />
- *    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
- *    <title>Web Note Player Test</title>
- *    <style>
- *      html {
- *        color-scheme: dark;
- *      }
- *      #play-buttons {
- *        display: flex;
- *        gap: 1rem;
- *      }
- *    </style>
- *  </head>
- *  <body>
- *    <h1>Web Note Player Test</h1>
- *
- *    <div id="audio-status">
- *      <p>Audio status: <span id="audio-status-text">Loading</span></p>
- *      <p id="error-display" style="color: red"></p>
- *    </div>
- *
- *    <div id="play-button-area">
- *      <button class="play-button" data-midi-note-number="48">
- *        Play C4 (Guitar)
- *      </button>
- *      <button class="play-button" data-midi-note-number="50">
- *        Play D4 (Guitar)
- *      </button>
- *      <button class="play-button" data-midi-note-number="52">
- *        Play E4 (Guitar)
- *      </button>
- *    </div>
- *
- *    <script type="module">
- *      import * as web_note_player from "../dist/mod.js";
- *
- *      const audioStatusText = document.getElementById(
- *        "audio-status-text",
- *      );
- *      document.body.addEventListener("web-note-player-ready", () => {
- *        audioStatusText.textContent = "Ready";
- *      });
- *
- *      web_note_player.initWebNotePlayer();
- *
- *      const playButtons = document.querySelectorAll(".play-button");
- *      playButtons.forEach((playButton) => {
- *        playButton.addEventListener("click", () => {
- *          playButton.dispatchEvent(
- *            new CustomEvent("web-note-player-on", {
- *              bubbles: true,
- *              detail: {
- *                instrumentAudio: "guitar",
- *                midiNoteNumber: parseInt(
- *                  playButton.dataset.midiNoteNumber,
- *                ),
- *              },
- *            }),
- *          );
- *        });
- *      });
- *    </script>
- *  </body>
- *</html>
- * ```
- *
- * @module
- */
-
-import * as sprite_data from "./data/sprite-data.ts";
+import { spriteData } from "./data/sprite-data.ts";
+import type {
+  SpriteNoteData,
+  WebNoteOffCustomEvent,
+  WebNoteOnCustomEvent,
+} from "./types/mod.ts";
 
 let webNoteAudioContext: AudioContext;
-let webNoteAudioSprite: AudioBuffer | undefined;
+let webNoteAudioSprite: AudioBuffer;
 const webNoteAudioBuffers: Record<
   string,
   { buffer: AudioBufferSourceNode; gain: GainNode }
@@ -101,7 +26,7 @@ export function initWebNotePlayer(
 ): void {
   try {
     webNoteAudioContext = audioContext;
-    loadAudioSpriteFromData(sprite_data.spriteData).then(() => {
+    loadAudioSpriteFromData(spriteData).then(() => {
       listenerElement.dispatchEvent(
         new CustomEvent("web-note-player-ready", {
           bubbles: true,
@@ -123,7 +48,7 @@ export function initWebNotePlayer(
  * @throws {Error} If the AudioContext is not initialized or if there is an error fetching or decoding the audio data.
  */
 async function loadAudioSpriteFromData(
-  audioSpriteData: { url: string } = sprite_data.spriteData
+  audioSpriteData: { url: string } = spriteData
 ): Promise<void> {
   try {
     if (!webNoteAudioContext) {
@@ -136,28 +61,6 @@ async function loadAudioSpriteFromData(
     throw new Error((error as Error).message || "Error loading audio sprite");
   }
 }
-
-/**
- * Interface for the detail property of the 'web-note-player-on' event.
- */
-export interface WebNoteOnEventDetail {
-  instrumentAudio: string;
-  midiNoteNumber: number;
-  uuid?: string;
-  noteDuration?: number;
-  noteVolume?: number;
-  noteDelay?: number;
-}
-
-/**
- * Type for the 'web-note-player-on' CustomEvent.
- */
-export type WebNoteOnCustomEvent = CustomEvent<WebNoteOnEventDetail>;
-
-/**
- * Type for the 'web-note-player-off' CustomEvent.
- */
-export type WebNoteOffCustomEvent = CustomEvent<{ uuid: string }>;
 
 /**
  * Attaches event listeners for 'web-note-player-on' and 'web-note-player-off' events.
@@ -193,17 +96,17 @@ function addWebNoteListeners(listenerElement: EventTarget): void {
  *
  * @param {string} instrumentAudio - The name of the instrument.
  * @param {number} midiNoteNumber - The MIDI note number.
- * @returns {sprite_data.SpriteInstrumentNote} The closest matching note data.
+ * @returns {SpriteNoteData} The closest matching note data.
  * @throws {TypeError} If the instrumentAudio is invalid.
  * @throws {Error} If no instrument data is found for the given instrument.
  */
 function getClosestSpriteNoteData(
   instrumentAudio: string,
   midiNoteNumber: number
-): sprite_data.SpriteInstrumentNote {
-  let instrumentData: sprite_data.SpriteInstrumentNote[] | undefined;
-  if (sprite_data.spriteData.instruments[instrumentAudio] != null) {
-    instrumentData = sprite_data.spriteData.instruments[instrumentAudio];
+): SpriteNoteData {
+  let instrumentData: SpriteNoteData[];
+  if (spriteData.instruments[instrumentAudio] != null) {
+    instrumentData = spriteData.instruments[instrumentAudio];
   } else {
     throw new TypeError(
       `invalid attribute value: instrument-audio = ${instrumentAudio}`
@@ -239,7 +142,7 @@ function getClosestSpriteNoteData(
  * @param {string} instrumentAudio - The name of the instrument to play.
  * @param {number} midiNoteNumber - The MIDI note number to play.
  * @param {string} [uuid=undefined] - A unique identifier for the note (optional).
- * @param {number} [noteDuration=5] - The duration of the note in seconds (optional).
+ * @param {number|undefined} [noteDuration=1] - The duration of the note in seconds (optional).
  * @param {number} [noteVolume=0.6] - The volume of the note (0 to 1) (optional).
  * @param {number} [noteDelay=0] - The delay before the note starts playing in seconds (optional).
  * @returns {void}
@@ -248,67 +151,61 @@ function webNoteOn(
   instrumentAudio: string,
   midiNoteNumber: number,
   uuid: string | undefined = undefined,
-  noteDuration: number = 5,
+  noteDuration: number | undefined = 1,
   noteVolume: number = 0.6,
   noteDelay: number = 0
 ): void {
   try {
+    const buffer = webNoteAudioContext.createBufferSource();
+    const gain = webNoteAudioContext.createGain();
+    const closestSpriteNoteData = getClosestSpriteNoteData(
+      instrumentAudio,
+      midiNoteNumber
+    );
+    buffer.buffer = webNoteAudioSprite;
+
+    const isLongNote =
+      noteDuration > closestSpriteNoteData.noteDuration ||
+      noteDuration === undefined;
+
     if (
-      instrumentAudio != null &&
-      midiNoteNumber != null &&
-      webNoteAudioContext &&
-      webNoteAudioSprite
+      isLongNote && // must check isLongNote for Chrome bug/feature!
+      closestSpriteNoteData.loopStart !== undefined &&
+      closestSpriteNoteData.loopEnd !== undefined
     ) {
-      const buffer = webNoteAudioContext.createBufferSource();
-      const gain = webNoteAudioContext.createGain();
-      const closestSpriteNoteData = getClosestSpriteNoteData(
-        instrumentAudio.toLowerCase(),
-        midiNoteNumber
+      buffer.loopStart = closestSpriteNoteData.loopStart;
+      buffer.loopEnd = closestSpriteNoteData.loopEnd;
+      buffer.loop = true;
+    } else {
+      buffer.loop = false;
+      if (isLongNote) noteDuration = closestSpriteNoteData.noteDuration;
+    }
+
+    buffer.connect(gain).connect(webNoteAudioContext.destination);
+
+    buffer.detune.value =
+      (midiNoteNumber - closestSpriteNoteData.midiNoteNumber) * 100;
+    if (Math.abs(buffer.detune.value) > 1200) {
+      console.warn(
+        `no midi note number in the audio sprite's ${instrumentAudio} data is within an octave of ${midiNoteNumber}`
       );
-      buffer.buffer = webNoteAudioSprite;
+    }
 
-      if (
-        closestSpriteNoteData.loopStart !== undefined &&
-        closestSpriteNoteData.loopEnd !== undefined
-      ) {
-        buffer.loopStart = closestSpriteNoteData.loopStart;
-        buffer.loopEnd = closestSpriteNoteData.loopEnd;
-        buffer.loop = true;
-      } else {
-        buffer.loop = false;
-        if (
-          noteDuration === 0 ||
-          noteDuration > closestSpriteNoteData.noteDuration
-        ) {
-          noteDuration = closestSpriteNoteData.noteDuration;
-        }
-      }
+    gain.gain.value = noteVolume;
+    const currentTime = webNoteAudioContext.currentTime;
 
-      buffer.connect(gain).connect(webNoteAudioContext.destination);
-
-      buffer.detune.value =
-        (midiNoteNumber - closestSpriteNoteData.midiNoteNumber) * 100;
-      if (Math.abs(buffer.detune.value) > 1200) {
-        console.warn(
-          `no midi note number in the audio sprite's ${instrumentAudio} data is within an octave of ${midiNoteNumber}`
-        );
-      }
-
-      gain.gain.value = noteVolume;
-      const currentTime = webNoteAudioContext.currentTime;
-
-      if (noteDuration === 0) {
-        buffer.start(currentTime + noteDelay, closestSpriteNoteData.noteStart);
-        if (uuid) webNoteAudioBuffers[uuid] = { buffer, gain };
-      } else {
-        const ENDISH_TIME = currentTime + noteDelay + noteDuration * 0.6;
-        gain.gain.setTargetAtTime(0, ENDISH_TIME, noteDuration * 0.2);
-        buffer.start(
-          currentTime + noteDelay,
-          closestSpriteNoteData.noteStart,
-          noteDuration
-        );
-      }
+    if (noteDuration === undefined) {
+      buffer.start(currentTime + noteDelay, closestSpriteNoteData.noteStart);
+      if (uuid) webNoteAudioBuffers[uuid] = { buffer, gain };
+    } else {
+      const noteStartTime = currentTime + noteDelay;
+      const noteEndTime = noteStartTime + 0.1;
+      gain.gain.setTargetAtTime(0, noteEndTime, 0.5);
+      buffer.start(
+        noteStartTime,
+        closestSpriteNoteData.noteStart,
+        noteDuration
+      );
     }
   } catch (error) {
     console.error(error);
@@ -322,7 +219,7 @@ function webNoteOn(
  * @returns {void}
  */
 function webNoteOff(uuid: string): void {
-  if (uuid && webNoteAudioBuffers[uuid] && webNoteAudioContext) {
+  if (webNoteAudioBuffers?.[uuid]) {
     const currentTime = webNoteAudioContext.currentTime;
     webNoteAudioBuffers[uuid].gain.gain.cancelScheduledValues(0);
     webNoteAudioBuffers[uuid].gain.gain.setTargetAtTime(0, currentTime, 0.05);
