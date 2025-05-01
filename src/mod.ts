@@ -12,6 +12,9 @@ const webNoteAudioBuffers: Record<
   { buffer: AudioBufferSourceNode; gain: GainNode }
 > = {};
 
+const GAIN_TIME_CONSTANT = 0.05;
+const EXTRA_NOTE_DURATION = 0.3;
+
 /**
  * Initializes the WebNotePlayer, setting up the audio context,
  * loading the audio sprite, and attaching event listeners.
@@ -22,7 +25,7 @@ const webNoteAudioBuffers: Record<
  */
 export function initWebNotePlayer(
   listenerElement: EventTarget = document.body, // Use EventTarget for broader compatibility
-  audioContext: AudioContext = new AudioContext()
+  audioContext: AudioContext = new AudioContext(),
 ): void {
   try {
     webNoteAudioContext = audioContext;
@@ -30,7 +33,7 @@ export function initWebNotePlayer(
       listenerElement.dispatchEvent(
         new CustomEvent("web-note-player-ready", {
           bubbles: true,
-        })
+        }),
       );
     });
     addWebNoteListeners(listenerElement);
@@ -48,7 +51,7 @@ export function initWebNotePlayer(
  * @throws {Error} If the AudioContext is not initialized or if there is an error fetching or decoding the audio data.
  */
 async function loadAudioSpriteFromData(
-  audioSpriteData: { url: string } = spriteData
+  audioSpriteData: { url: string } = spriteData,
 ): Promise<void> {
   try {
     if (!webNoteAudioContext) {
@@ -70,25 +73,31 @@ async function loadAudioSpriteFromData(
  */
 function addWebNoteListeners(listenerElement: EventTarget): void {
   // web-note-player-on
-  listenerElement.addEventListener("web-note-player-on", ((
-    event: WebNoteOnCustomEvent
-  ) => {
-    webNoteOn(
-      event.detail.instrumentAudio,
-      event.detail.midiNoteNumber,
-      event.detail.uuid,
-      event.detail.noteDuration,
-      event.detail.noteVolume,
-      event.detail.noteDelay
-    );
-  }) as EventListenerOrEventListenerObject);
+  listenerElement.addEventListener(
+    "web-note-player-on",
+    ((
+      event: WebNoteOnCustomEvent,
+    ) => {
+      webNoteOn(
+        event.detail.instrumentAudio,
+        event.detail.midiNoteNumber,
+        event.detail.uuid,
+        event.detail.noteDuration,
+        event.detail.noteVolume,
+        event.detail.noteDelay,
+      );
+    }) as EventListenerOrEventListenerObject,
+  );
 
   // web-note-player-off
-  listenerElement.addEventListener("web-note-player-off", ((
-    event: WebNoteOffCustomEvent
-  ) => {
-    webNoteOff(event.detail.uuid);
-  }) as EventListenerOrEventListenerObject);
+  listenerElement.addEventListener(
+    "web-note-player-off",
+    ((
+      event: WebNoteOffCustomEvent,
+    ) => {
+      webNoteOff(event.detail.uuid);
+    }) as EventListenerOrEventListenerObject,
+  );
 }
 
 /**
@@ -102,14 +111,14 @@ function addWebNoteListeners(listenerElement: EventTarget): void {
  */
 function getClosestSpriteNoteData(
   instrumentAudio: string,
-  midiNoteNumber: number
+  midiNoteNumber: number,
 ): SpriteNoteData {
   let instrumentData: SpriteNoteData[];
   if (spriteData.instruments[instrumentAudio] != null) {
     instrumentData = spriteData.instruments[instrumentAudio];
   } else {
     throw new TypeError(
-      `invalid attribute value: instrument-audio = ${instrumentAudio}`
+      `invalid attribute value: instrument-audio = ${instrumentAudio}`,
     );
   }
 
@@ -127,7 +136,7 @@ function getClosestSpriteNoteData(
       }
       const previousSpriteNote = instrumentData[i - 1].midiNoteNumber;
       return Math.abs(previousSpriteNote - midiNoteNumber) <=
-        Math.abs(currentNumber - midiNoteNumber)
+          Math.abs(currentNumber - midiNoteNumber)
         ? instrumentData[i - 1]
         : instrumentData[i];
     }
@@ -137,7 +146,9 @@ function getClosestSpriteNoteData(
 }
 
 /**
- * Plays a musical note using the Web Audio API.
+ * Plays a musical note using the Web Audio API. If the note duration is to be infinite,
+ * pass noteDuration=undefined as a parameter, and you must supply a uuid string,
+ * so the note can be turned off using the webNoteOff(uuid: string) function.
  *
  * @param {string} instrumentAudio - The name of the instrument to play.
  * @param {number} midiNoteNumber - The MIDI note number to play.
@@ -153,19 +164,18 @@ function webNoteOn(
   uuid: string | undefined = undefined,
   noteDuration: number | undefined = 1,
   noteVolume: number = 0.6,
-  noteDelay: number = 0
+  noteDelay: number = 0,
 ): void {
   try {
     const buffer = webNoteAudioContext.createBufferSource();
     const gain = webNoteAudioContext.createGain();
     const closestSpriteNoteData = getClosestSpriteNoteData(
       instrumentAudio,
-      midiNoteNumber
+      midiNoteNumber,
     );
     buffer.buffer = webNoteAudioSprite;
 
-    const isLongNote =
-      noteDuration > closestSpriteNoteData.noteDuration ||
+    const isLongNote = noteDuration > closestSpriteNoteData.noteDuration ||
       noteDuration === undefined;
 
     if (
@@ -185,26 +195,25 @@ function webNoteOn(
 
     buffer.detune.value =
       (midiNoteNumber - closestSpriteNoteData.midiNoteNumber) * 100;
-    if (Math.abs(buffer.detune.value) > 1200) {
-      console.warn(
-        `no midi note number in the audio sprite's ${instrumentAudio} data is within an octave of ${midiNoteNumber}`
-      );
-    }
 
     gain.gain.value = noteVolume;
     const currentTime = webNoteAudioContext.currentTime;
+    const noteStartTime = currentTime + noteDelay;
 
-    if (noteDuration === undefined) {
-      buffer.start(currentTime + noteDelay, closestSpriteNoteData.noteStart);
-      if (uuid) webNoteAudioBuffers[uuid] = { buffer, gain };
+    // must supply uuid, if using undefined/infinite noteDuration
+    if (noteDuration === undefined && uuid !== undefined) {
+      buffer.start(noteStartTime, closestSpriteNoteData.noteStart);
+      webNoteAudioBuffers[uuid] = { buffer, gain };
     } else {
-      const noteStartTime = currentTime + noteDelay;
-      const noteEndTime = noteStartTime + 0.1;
-      gain.gain.setTargetAtTime(0, noteEndTime, 0.5);
+      // fade down the gain with a fast time constant
+      // and play the note longer than the supplied duration
+      // to avoid a non-zero crossing audio pop
+      const noteEndTime = noteStartTime + noteDuration;
+      gain.gain.setTargetAtTime(0, noteEndTime, GAIN_TIME_CONSTANT);
       buffer.start(
         noteStartTime,
         closestSpriteNoteData.noteStart,
-        noteDuration
+        noteDuration + EXTRA_NOTE_DURATION, // play the note slightly longer than supplied duration
       );
     }
   } catch (error) {
@@ -213,7 +222,7 @@ function webNoteOn(
 }
 
 /**
- * Stops a playing note.
+ * Stops a note that is playing.
  *
  * @param {string} uuid - The unique identifier of the note to stop.
  * @returns {void}
@@ -222,8 +231,12 @@ function webNoteOff(uuid: string): void {
   if (webNoteAudioBuffers?.[uuid]) {
     const currentTime = webNoteAudioContext.currentTime;
     webNoteAudioBuffers[uuid].gain.gain.cancelScheduledValues(0);
-    webNoteAudioBuffers[uuid].gain.gain.setTargetAtTime(0, currentTime, 0.05);
-    webNoteAudioBuffers[uuid].buffer.stop(currentTime + 0.1);
+    webNoteAudioBuffers[uuid].gain.gain.setTargetAtTime(
+      0,
+      currentTime,
+      GAIN_TIME_CONSTANT,
+    );
+    webNoteAudioBuffers[uuid].buffer.stop(currentTime + EXTRA_NOTE_DURATION);
     delete webNoteAudioBuffers[uuid];
   }
 }
