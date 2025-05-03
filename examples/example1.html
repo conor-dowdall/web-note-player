@@ -34,11 +34,9 @@
     </div>
 
     <script type="module">
-      import * as web_note_player from "../dist/mod.js";
+      import * as web_note_player from "../dist/bundle.js";
 
-      const audioStatusText = document.getElementById(
-        "audio-status-text",
-      );
+      const audioStatusText = document.getElementById("audio-status-text");
       document.body.addEventListener("web-note-player-ready", () => {
         audioStatusText.textContent = "Ready";
       });
@@ -53,11 +51,9 @@
               bubbles: true,
               detail: {
                 instrumentAudio: "guitar",
-                midiNoteNumber: parseInt(
-                  playButton.dataset.midiNoteNumber,
-                ),
+                midiNoteNumber: parseInt(playButton.dataset.midiNoteNumber),
               },
-            }),
+            })
           );
         });
       });

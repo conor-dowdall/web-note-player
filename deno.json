@@ -7,6 +7,6 @@
     "lib": ["dom", "dom.iterable", "dom.asynciterable", "deno.ns"]
   },
   "tasks": {
-    "build": "deno run -A build.ts"
+    "bundle": "deno run -A bundle.ts"
   }
 }

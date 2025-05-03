@@ -1,10 +1,45 @@
 {
-  "version": "4",
+  "version": "5",
+  "specifiers": {
+    "jsr:@duesabati/esbuild-deno-plugin@*": "0.2.6",
+    "jsr:@std/encoding@1.0.1": "1.0.1",
+    "jsr:@std/fs@1.0.1": "1.0.1",
+    "jsr:@std/jsonc@1.0.0": "1.0.0",
+    "jsr:@std/path@1.0.2": "1.0.2",
+    "jsr:@std/path@^1.0.2": "1.0.2"
+  },
+  "jsr": {
+    "@duesabati/esbuild-deno-plugin@0.2.6": {
+      "integrity": "3269b3c773fcd2b7e2dbe8cac5b551d92358260f765fb00fc457dd27216f4d80",
+      "dependencies": [
+        "jsr:@std/encoding",
+        "jsr:@std/fs",
+        "jsr:@std/jsonc",
+        "jsr:@std/path@1.0.2"
+      ]
+    },
+    "@std/encoding@1.0.1": {
+      "integrity": "5955c6c542ebb4ce6587c3b548dc71e07a6c27614f1976d1d3887b1196cf4e65"
+    },
+    "@std/fs@1.0.1": {
+      "integrity": "d6914ca2c21abe591f733b31dbe6331e446815e513e2451b3b9e472daddfefcb",
+      "dependencies": [
+        "jsr:@std/path@^1.0.2"
+      ]
+    },
+    "@std/jsonc@1.0.0": {
+      "integrity": "835da212e586f3ef94ab25e8f0e8a7711a86fddbee95ad40c34d6b3d74da1a1b"
+    },
+    "@std/path@1.0.2": {
+      "integrity": "a452174603f8c620bd278a380c596437a9eef50c891c64b85812f735245d9ec7"
+    }
+  },
   "remote": {
     "https://deno.land/x/denoflate@1.2.1/mod.ts": "f5628e44b80b3d80ed525afa2ba0f12408e3849db817d47a883b801f9ce69dd6",
     "https://deno.land/x/denoflate@1.2.1/pkg/denoflate.js": "b9f9ad9457d3f12f28b1fb35c555f57443427f74decb403113d67364e4f2caf4",
     "https://deno.land/x/denoflate@1.2.1/pkg/denoflate_bg.wasm.js": "d581956245407a2115a3d7e8d85a9641c032940a8e810acbd59ca86afd34d44d",
     "https://deno.land/x/esbuild@v0.25.0/mod.js": "0a1cbaa89f99043e836de256455f609583bb626482396c74f4eabf7df07529bc",
-    "https://deno.land/x/esbuild@v0.25.2/mod.js": "fde73e72559dc2932556506581bc61462cff72d0394382334500d956851cd9f5"
+    "https://deno.land/x/esbuild@v0.25.2/mod.js": "fde73e72559dc2932556506581bc61462cff72d0394382334500d956851cd9f5",
+    "https://deno.land/x/esbuild@v0.25.3/mod.js": "4dcb56f4027ffbb46819a8d871de13b122bd7b0e619d5cbca101412fbee117c9"
   }
 }

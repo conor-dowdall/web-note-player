@@ -6,7 +6,7 @@
  *
  * @example
  * ```bash
- * deno task build
+ * deno task bundle
  * ```
  * Then open an example from `examples/` in a browser.
  *
@@ -14,4 +14,4 @@
  */
 
 export * from "./src/mod.ts";
-export * from "./src/types/mod.ts";
+export type * from "./src/types/mod.d.ts";

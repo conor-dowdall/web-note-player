@@ -24,8 +24,8 @@ Build the javascript output module `dist/mod.js`. This step uses esbuild with
 deno.
 
 ```bash
-deno task build
+deno task bundle
 ```
 
 Open [the examples directory](examples/) in a browser, and choose the
-[basic example](examples/basic-play-notes.html).
+[basic example](examples/example1.html).

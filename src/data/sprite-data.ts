@@ -1,4 +1,4 @@
-import type { SpriteData } from "../types/mod.ts";
+import type { SpriteData } from "../types/mod.d.ts";
 
 export const spriteData: SpriteData = {
   url: "/assets/sprite.ogg",

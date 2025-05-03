@@ -3,7 +3,7 @@ import type {
   SpriteNoteData,
   WebNoteOffCustomEvent,
   WebNoteOnCustomEvent,
-} from "./types/mod.ts";
+} from "./types/mod.d.ts";
 
 let webNoteAudioContext: AudioContext;
 let webNoteAudioSprite: AudioBuffer;
@@ -25,7 +25,7 @@ const EXTRA_NOTE_DURATION = 0.3;
  */
 export function initWebNotePlayer(
   listenerElement: EventTarget = document.body, // Use EventTarget for broader compatibility
-  audioContext: AudioContext = new AudioContext(),
+  audioContext: AudioContext = new AudioContext()
 ): void {
   try {
     webNoteAudioContext = audioContext;
@@ -33,7 +33,7 @@ export function initWebNotePlayer(
       listenerElement.dispatchEvent(
         new CustomEvent("web-note-player-ready", {
           bubbles: true,
-        }),
+        })
       );
     });
     addWebNoteListeners(listenerElement);
@@ -51,7 +51,7 @@ export function initWebNotePlayer(
  * @throws {Error} If the AudioContext is not initialized or if there is an error fetching or decoding the audio data.
  */
 async function loadAudioSpriteFromData(
-  audioSpriteData: { url: string } = spriteData,
+  audioSpriteData: { url: string } = spriteData
 ): Promise<void> {
   try {
     if (!webNoteAudioContext) {
@@ -73,31 +73,25 @@ async function loadAudioSpriteFromData(
  */
 function addWebNoteListeners(listenerElement: EventTarget): void {
   // web-note-player-on
-  listenerElement.addEventListener(
-    "web-note-player-on",
-    ((
-      event: WebNoteOnCustomEvent,
-    ) => {
-      webNoteOn(
-        event.detail.instrumentAudio,
-        event.detail.midiNoteNumber,
-        event.detail.uuid,
-        event.detail.noteDuration,
-        event.detail.noteVolume,
-        event.detail.noteDelay,
-      );
-    }) as EventListenerOrEventListenerObject,
-  );
+  listenerElement.addEventListener("web-note-player-on", ((
+    event: WebNoteOnCustomEvent
+  ) => {
+    webNoteOn(
+      event.detail.instrumentAudio,
+      event.detail.midiNoteNumber,
+      event.detail.uuid,
+      event.detail.noteDuration,
+      event.detail.noteVolume,
+      event.detail.noteDelay
+    );
+  }) as EventListenerOrEventListenerObject);
 
   // web-note-player-off
-  listenerElement.addEventListener(
-    "web-note-player-off",
-    ((
-      event: WebNoteOffCustomEvent,
-    ) => {
-      webNoteOff(event.detail.uuid);
-    }) as EventListenerOrEventListenerObject,
-  );
+  listenerElement.addEventListener("web-note-player-off", ((
+    event: WebNoteOffCustomEvent
+  ) => {
+    webNoteOff(event.detail.uuid);
+  }) as EventListenerOrEventListenerObject);
 }
 
 /**
@@ -111,14 +105,14 @@ function addWebNoteListeners(listenerElement: EventTarget): void {
  */
 function getClosestSpriteNoteData(
   instrumentAudio: string,
-  midiNoteNumber: number,
+  midiNoteNumber: number
 ): SpriteNoteData {
   let instrumentData: SpriteNoteData[];
   if (spriteData.instruments[instrumentAudio] != null) {
     instrumentData = spriteData.instruments[instrumentAudio];
   } else {
     throw new TypeError(
-      `invalid attribute value: instrument-audio = ${instrumentAudio}`,
+      `invalid attribute value: instrument-audio = ${instrumentAudio}`
     );
   }
 
@@ -136,7 +130,7 @@ function getClosestSpriteNoteData(
       }
       const previousSpriteNote = instrumentData[i - 1].midiNoteNumber;
       return Math.abs(previousSpriteNote - midiNoteNumber) <=
-          Math.abs(currentNumber - midiNoteNumber)
+        Math.abs(currentNumber - midiNoteNumber)
         ? instrumentData[i - 1]
         : instrumentData[i];
     }
@@ -164,18 +158,19 @@ function webNoteOn(
   uuid: string | undefined = undefined,
   noteDuration: number | undefined = 1,
   noteVolume: number = 0.6,
-  noteDelay: number = 0,
+  noteDelay: number = 0
 ): void {
   try {
     const buffer = webNoteAudioContext.createBufferSource();
     const gain = webNoteAudioContext.createGain();
     const closestSpriteNoteData = getClosestSpriteNoteData(
       instrumentAudio,
-      midiNoteNumber,
+      midiNoteNumber
     );
     buffer.buffer = webNoteAudioSprite;
 
-    const isLongNote = noteDuration > closestSpriteNoteData.noteDuration ||
+    const isLongNote =
+      noteDuration > closestSpriteNoteData.noteDuration ||
       noteDuration === undefined;
 
     if (
@@ -213,7 +208,7 @@ function webNoteOn(
       buffer.start(
         noteStartTime,
         closestSpriteNoteData.noteStart,
-        noteDuration + EXTRA_NOTE_DURATION, // play the note slightly longer than supplied duration
+        noteDuration + EXTRA_NOTE_DURATION // play the note slightly longer than supplied duration
       );
     }
   } catch (error) {
@@ -234,7 +229,7 @@ function webNoteOff(uuid: string): void {
     webNoteAudioBuffers[uuid].gain.gain.setTargetAtTime(
       0,
       currentTime,
-      GAIN_TIME_CONSTANT,
+      GAIN_TIME_CONSTANT
     );
     webNoteAudioBuffers[uuid].buffer.stop(currentTime + EXTRA_NOTE_DURATION);
     delete webNoteAudioBuffers[uuid];
