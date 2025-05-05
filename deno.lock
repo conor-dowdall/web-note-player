@@ -3,6 +3,7 @@
   "specifiers": {
     "jsr:@duesabati/esbuild-deno-plugin@*": "0.2.6",
     "jsr:@luca/esbuild-deno-loader@*": "0.11.1",
+    "jsr:@luca/esbuild-deno-loader@~0.11.1": "0.11.1",
     "jsr:@std/bytes@^1.0.2": "1.0.5",
     "jsr:@std/encoding@1.0.1": "1.0.1",
     "jsr:@std/encoding@^1.0.5": "1.0.10",
@@ -11,7 +12,8 @@
     "jsr:@std/path@1.0.2": "1.0.2",
     "jsr:@std/path@^1.0.2": "1.0.2",
     "jsr:@std/path@^1.0.6": "1.0.9",
-    "npm:esbuild@*": "0.25.3"
+    "npm:esbuild@*": "0.25.3",
+    "npm:esbuild@~0.25.3": "0.25.3"
   },
   "jsr": {
     "@duesabati/esbuild-deno-plugin@0.2.6": {
@@ -222,5 +224,11 @@
     "https://deno.land/x/esbuild@v0.25.0/mod.js": "0a1cbaa89f99043e836de256455f609583bb626482396c74f4eabf7df07529bc",
     "https://deno.land/x/esbuild@v0.25.2/mod.js": "fde73e72559dc2932556506581bc61462cff72d0394382334500d956851cd9f5",
     "https://deno.land/x/esbuild@v0.25.3/mod.js": "4dcb56f4027ffbb46819a8d871de13b122bd7b0e619d5cbca101412fbee117c9"
+  },
+  "workspace": {
+    "dependencies": [
+      "jsr:@luca/esbuild-deno-loader@~0.11.1",
+      "npm:esbuild@~0.25.3"
+    ]
   }
 }
