@@ -1,6 +1,6 @@
 {
   "name": "@musodojo/web-note-player",
-  "version": "0.2.3",
+  "version": "1.0.0",
   "license": "unlicense",
   "exports": "./mod.ts",
   "compilerOptions": {
