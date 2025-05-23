@@ -1,11 +1,38 @@
+/**
+ * @fileoverview Defines the `spriteData` constant, which holds metadata
+ * for the audio sprite used by the WebNotePlayer. This includes the URL
+ * of the audio sprite file and detailed timing and MIDI range information
+ * for each instrument and note within the sprite.
+ *
+ * **Important:** The `SpriteNoteData` arrays within each instrument
+ * must be sorted by `midiNoteRangeStart` for efficient lookup by the player.
+ * @module sprite-data
+ */
+
 import type { SpriteData } from "../types/mod.d.ts";
 
+/**
+ * Provides comprehensive metadata for the audio sprite.
+ *
+ * This object specifies the URL for the main audio sprite file and
+ * details for each instrument. Each instrument entry is an array of
+ * `SpriteNoteData` objects, mapping MIDI note *ranges* to specific
+ * start times, durations, and optional loop points within the sprite.
+ *
+ * The `midiNoteNumber` within `SpriteNoteData` represents the actual
+ * sampled pitch, which will be used for de-tuning.
+ *
+ * @constant
+ * @type {SpriteData}
+ */
 export const spriteData: SpriteData = {
   url: "/assets/sprite.ogg",
   instruments: {
     guitar: [
       {
         midiNoteNumber: 40,
+        midiNoteRangeStart: 0, // Covers notes from 0 up to 43
+        midiNoteRangeEnd: 43,
         noteStart: 0,
         noteDuration: 4.387845804988662,
         loopStart: 4.372108843537415,
@@ -13,6 +40,8 @@ export const spriteData: SpriteData = {
       },
       {
         midiNoteNumber: 45,
+        midiNoteRangeStart: 44,
+        midiNoteRangeEnd: 48,
         noteStart: 5,
         noteDuration: 3.213968253968254,
         loopStart: 8.204263038548753,
@@ -20,6 +49,8 @@ export const spriteData: SpriteData = {
       },
       {
         midiNoteNumber: 50,
+        midiNoteRangeStart: 49,
+        midiNoteRangeEnd: 53,
         noteStart: 9,
         noteDuration: 4.537324263038549,
         loopStart: 13.508707482993199,
@@ -27,6 +58,8 @@ export const spriteData: SpriteData = {
       },
       {
         midiNoteNumber: 55,
+        midiNoteRangeStart: 54,
+        midiNoteRangeEnd: 58,
         noteStart: 14,
         noteDuration: 2.0015419501133787,
         loopStart: 15.985873015873016,
@@ -34,6 +67,8 @@ export const spriteData: SpriteData = {
       },
       {
         midiNoteNumber: 59,
+        midiNoteRangeStart: 59,
+        midiNoteRangeEnd: 62,
         noteStart: 17,
         noteDuration: 1.4187755102040815,
         loopStart: 18.410090702947844,
@@ -41,6 +76,8 @@ export const spriteData: SpriteData = {
       },
       {
         midiNoteNumber: 64,
+        midiNoteRangeStart: 63,
+        midiNoteRangeEnd: 67,
         noteStart: 19,
         noteDuration: 0.9084807256235827,
         loopStart: 19.892108843537414,
@@ -48,6 +85,8 @@ export const spriteData: SpriteData = {
       },
       {
         midiNoteNumber: 69,
+        midiNoteRangeStart: 68,
+        midiNoteRangeEnd: 70,
         noteStart: 20,
         noteDuration: 0.8397278911564626,
         loopStart: 20.827868480725623,
@@ -55,6 +94,8 @@ export const spriteData: SpriteData = {
       },
       {
         midiNoteNumber: 71,
+        midiNoteRangeStart: 71,
+        midiNoteRangeEnd: 75,
         noteStart: 21,
         noteDuration: 0.6138321995464853,
         loopStart: 21.603650793650793,
@@ -62,6 +103,8 @@ export const spriteData: SpriteData = {
       },
       {
         midiNoteNumber: 76,
+        midiNoteRangeStart: 76,
+        midiNoteRangeEnd: 83,
         noteStart: 22,
         noteDuration: 0.7136507936507936,
         loopStart: 22.702789115646258,
@@ -69,6 +112,8 @@ export const spriteData: SpriteData = {
       },
       {
         midiNoteNumber: 84,
+        midiNoteRangeStart: 84,
+        midiNoteRangeEnd: 127,
         noteStart: 23,
         noteDuration: 0.4495691609977324,
         loopStart: 23.442721088435373,
