@@ -20,7 +20,7 @@ custom events.
 
 ## Examples
 
-Build the javascript output module `dist/mod.js`. This step uses esbuild with
+Build the javascript output module `dist/bundle.js`. This step uses esbuild with
 deno.
 
 ```bash
