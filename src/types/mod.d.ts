@@ -7,13 +7,89 @@
  */
 
 /**
+ * Interface for the overall audio sprite data structure.
+ * This aggregates the URL of the sprite and the data for all instruments.
+ */
+export interface AudioSpriteData {
+  /**
+   * The URL to the audio sprite file (e.g., an OGG file).
+   * Note: MP3s has timing issues when exported from WAVs.
+   */
+  url: string;
+  /**
+   * An object containing data for all instruments in the sprite,
+   * where keys are instrument names.
+   * The `AudioSpriteNoteData` arrays within each instrument must be
+   * sorted by `midiNoteRangeStart`.
+   */
+  instruments: AudioSpriteInstruments;
+}
+
+/**
+ * Interface for the collection of instruments within the audio sprite data.
+ * Each key is an instrument name, and its value is an array of `AudioSpriteNoteData`.
+ * The `AudioSpriteNoteData` arrays for each instrument must be sorted by `midiNoteRangeStart`.
+ */
+export interface AudioSpriteInstruments {
+  /**
+   * A string index signature allowing dynamic instrument names.
+   * @type {AudioSpriteNoteData[]}
+   */
+  [key: string]: AudioSpriteNoteData[];
+}
+
+/**
+ * Interface for the data associated with a single note within an audio sprite,
+ * defining the range of MIDI notes it covers.
+ *
+ * **Important:** Entries in the `instruments` array must be sorted by `midiNoteRangeStart`
+ * for efficient lookup.
+ */
+export interface AudioSpriteNoteData {
+  /**
+   * The actual MIDI note number (the sampled pitch) of this audio segment.
+   * This is used as the base for de-tuning.
+   */
+  midiNoteNumber: number;
+  /**
+   * The lowest MIDI note number this audio segment should cover.
+   * Inclusive.
+   */
+  midiNoteRangeStart: number;
+  /**
+   * The highest MIDI note number this audio segment should cover.
+   * Inclusive.
+   */
+  midiNoteRangeEnd: number;
+  /**
+   * The start time in seconds of this note's audio segment within the main audio sprite.
+   */
+  noteStart: number;
+  /**
+   * The natural duration in seconds of this note's audio segment.
+   */
+  noteDuration: number;
+  /**
+   * Optional loop start point in seconds within the note's audio segment.
+   * Used for sustained or looping notes.
+   * @optional
+   */
+  loopStart?: number;
+  /**
+   * Optional loop end point in seconds within the note's audio segment.
+   * Used for sustained or looping notes.
+   * @optional
+   */
+  loopEnd?: number;
+}
+
+/**
  * Interface for the `detail` property of the `web-note-player-on` custom event.
  * This defines the payload of data sent when a note is requested to start playing.
  */
 export interface WebNoteOnEventDetail {
   /**
-   * The name of the instrument to play (e.g., "guitar"), which should
-   * correspond to an instrument defined in the `spriteData`.
+   * The name of the instrument to play (e.g., "guitar").
    */
   instrumentAudio: string;
   /**
@@ -67,81 +143,3 @@ export type WebNoteOnCustomEvent = CustomEvent<WebNoteOnEventDetail>;
  * @augments {CustomEvent<T>}
  */
 export type WebNoteOffCustomEvent = CustomEvent<{ uuid: string }>;
-
-/**
- * Interface for the data associated with a single note within an audio sprite,
- * defining the range of MIDI notes it covers.
- * This defines how each note's segment is represented in the `spriteData`.
- *
- * **Important:** Entries in the `instruments` array must be sorted by `midiNoteRangeStart`
- * for efficient lookup.
- */
-export interface SpriteNoteData {
-  /**
-   * The actual MIDI note number (the sampled pitch) of this audio segment.
-   * This is used as the base for de-tuning.
-   */
-  midiNoteNumber: number;
-  /**
-   * The lowest MIDI note number this audio segment should cover.
-   * Inclusive.
-   */
-  midiNoteRangeStart: number;
-  /**
-   * The highest MIDI note number this audio segment should cover.
-   * Inclusive.
-   */
-  midiNoteRangeEnd: number;
-  /**
-   * The start time in seconds of this note's audio segment within the main audio sprite.
-   */
-  noteStart: number;
-  /**
-   * The natural duration in seconds of this note's audio segment.
-   */
-  noteDuration: number;
-  /**
-   * Optional loop start point in seconds within the note's audio segment.
-   * Used for sustained or looping notes.
-   * @optional
-   */
-  loopStart?: number;
-  /**
-   * Optional loop end point in seconds within the note's audio segment.
-   * Used for sustained or looping notes.
-   * @optional
-   */
-  loopEnd?: number;
-}
-
-/**
- * Interface for the collection of instruments within the audio sprite data.
- * Each key is an instrument name, and its value is an array of `SpriteNoteData`.
- * The `SpriteNoteData` arrays for each instrument must be sorted by `midiNoteRangeStart`.
- */
-export interface SpriteInstruments {
-  /**
-   * A string index signature allowing dynamic instrument names.
-   * @type {SpriteNoteData[]}
-   */
-  [key: string]: SpriteNoteData[];
-}
-
-/**
- * Interface for the overall audio sprite data structure.
- * This aggregates the URL of the sprite and the data for all instruments.
- */
-export interface SpriteData {
-  /**
-   * The URL to the audio sprite file (e.g., an OGG file).
-   * Note: MP3s has timing issues when exported from WAVs.
-   */
-  url: string;
-  /**
-   * An object containing data for all instruments in the sprite,
-   * where keys are instrument names.
-   * The `SpriteNoteData` arrays within each instrument must be
-   * sorted by `midiNoteRangeStart`.
-   */
-  instruments: SpriteInstruments;
-}
