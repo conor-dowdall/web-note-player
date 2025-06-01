@@ -15,8 +15,8 @@ custom events.
 ## Dependencies
 
 - An audio sprite file (e.g., `sprite.ogg`).
-- A `sprite-data.ts` file defining the sprite's metadata (URLs and
-  instrument/note timings).
+- A `sprite-data.ts` file defining the sprite's metadata (instrument/note
+  timings).
 
 ## Examples
 
