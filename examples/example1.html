@@ -44,7 +44,10 @@
         audioStatusText.textContent = "Ready";
       });
 
-      initWebNotePlayer(nylonGuitarAudioSpriteData);
+      initWebNotePlayer(
+        "./nylon-guitar-audio-sprite.ogg",
+        nylonGuitarAudioSpriteData,
+      );
 
       const playButtons = document.querySelectorAll(".play-button");
       playButtons.forEach((playButton) => {
