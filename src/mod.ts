@@ -13,8 +13,7 @@
  */
 
 import type {
-  AudioSpriteData,
-  AudioSpriteInstruments,
+  AudioSpriteInstrumentsData,
   AudioSpriteNoteData,
   WebNoteOffCustomEvent,
   WebNoteOnCustomEvent,
@@ -27,16 +26,16 @@ import type {
 let webNoteAudioContext: AudioContext | null = null;
 
 /**
- * The decoded AudioBuffer containing the entire audio sprite.
- * Loaded by `loadAudioSpriteFromData`.
+ * The list of instruments and their data, stored in the audio sprite.
+ * Loaded by `initWebNotePlayer`.
  */
-let audioSpriteBuffer: AudioBuffer | null = null;
+let audioSpriteInstrumentsData: AudioSpriteInstrumentsData | null = null;
 
 /**
- * The list of instruments and their data, stored in the audio sprite.
- * Loaded by `loadAudioSpriteFromData`.
+ * The decoded AudioBuffer containing the entire audio sprite.
+ * Loaded by `loadAudioSpriteFromUrl`.
  */
-let audioSpriteInstruments: AudioSpriteInstruments | null = null;
+let audioSpriteBuffer: AudioBuffer | null = null;
 
 /**
  * A record mapping unique note UUIDs to their active AudioBufferSourceNode
@@ -70,7 +69,9 @@ const EXTRA_NOTE_DURATION = 0.3;
  * to the provided `listenerElement`. Once the audio sprite is loaded,
  * a `web-note-player-ready` custom event is dispatched.
  *
- * @param {AudioSpriteData} audioSpriteData - An object containing the URL and
+ * @param {string} audioSpriteUrl - An string containing the URL of the audio
+ * sprite to be loaded. This is a required parameter.
+ * @param {AudioSpriteInstrumentsData} audioSpriteData - An object containing the
  * metadata for the audio sprite to be loaded. This is a required parameter.
  * @param {EventTarget} [listenerElement=document.body] - The EventTarget to attach
  * 'web-note-player-on' and 'web-note-player-off' event listeners to.
@@ -82,22 +83,24 @@ const EXTRA_NOTE_DURATION = 0.3;
  * when the audio sprite has been successfully loaded and decoded.
  */
 export function initWebNotePlayer(
-  audioSpriteData: AudioSpriteData,
+  audioSpriteUrl: string,
+  audioSpriteData: AudioSpriteInstrumentsData,
   listenerElement: EventTarget = document.body,
   audioContext: AudioContext = new AudioContext(),
 ): void {
   try {
+    if (!audioSpriteUrl) throw Error("audioSpriteUrl is not defined");
     if (!audioSpriteData) throw Error("audioSpriteData is not defined");
     webNoteAudioContext = audioContext;
-    loadAudioSpriteFromData(audioSpriteData).then(() => {
-      audioSpriteInstruments = audioSpriteData.instruments;
+    loadAudioSpriteFromUrl(audioSpriteUrl).then(() => {
+      audioSpriteInstrumentsData = audioSpriteData;
+      addWebNotePlayerListeners(listenerElement);
       listenerElement.dispatchEvent(
         new CustomEvent("web-note-player-ready", {
           bubbles: true,
         }),
       );
     });
-    addWebNoteListeners(listenerElement);
   } catch (error) {
     console.error(error);
   }
@@ -106,25 +109,22 @@ export function initWebNotePlayer(
 /**
  * Loads an audio sprite from a URL and decodes it into an AudioBuffer.
  *
- * This asynchronous function fetches the audio file specified in `audioSpriteData.url`,
+ * This asynchronous function fetches the audio file specified in `audioSpriteUrl`,
  * converts it into an ArrayBuffer, and then decodes it using the `webNoteAudioContext`.
  * The resulting `AudioBuffer` is stored in `audioSpriteBuffer`.
  *
  * @async
- * @param {AudioSpriteData} audioSpriteData - An object containing the URL and
- * metadata for the audio sprite.
+ * @param {string} audioSpriteUrl - A string containing the URL of the audio sprite.
  * @returns {Promise<void>} A Promise that resolves when the audio sprite is successfully
  * loaded and decoded.
  * @throws {Error} If `webNoteAudioContext` is not initialized before calling this function,
  * or if there is an error during the fetch or audio decoding process.
  */
-async function loadAudioSpriteFromData(
-  audioSpriteData: AudioSpriteData,
-): Promise<void> {
+async function loadAudioSpriteFromUrl(audioSpriteUrl: string): Promise<void> {
   try {
     if (!webNoteAudioContext) throw new Error("AudioContext not initialized.");
 
-    const spriteResponse = await fetch(audioSpriteData.url);
+    const spriteResponse = await fetch(audioSpriteUrl);
     if (!spriteResponse.ok) {
       throw new Error(
         `Failed to fetch audio sprite: ${spriteResponse.statusText} (${spriteResponse.status})`,
@@ -142,7 +142,7 @@ async function loadAudioSpriteFromData(
  * Attaches event listeners for custom 'web-note-player-on' and 'web-note-player-off' events
  * to the specified `listenerElement`.
  *
- * These listeners trigger the `webNoteOn` and `webNoteOff` functions respectively,
+ * These listeners trigger the `webNotePlayerOn` and `webNotePlayerOff` functions respectively,
  * enabling external control over audio playback.
  *
  * @private
@@ -150,14 +150,14 @@ async function loadAudioSpriteFromData(
  * to which the event listeners will be attached.
  * @returns {void}
  */
-function addWebNoteListeners(listenerElement: EventTarget): void {
+function addWebNotePlayerListeners(listenerElement: EventTarget): void {
   // web-note-player-on
   listenerElement.addEventListener(
     "web-note-player-on",
     ((
       event: WebNoteOnCustomEvent,
     ) => {
-      webNoteOn(
+      webNotePlayerOn(
         event.detail.instrumentAudio,
         event.detail.midiNoteNumber,
         event.detail.uuid,
@@ -174,7 +174,7 @@ function addWebNoteListeners(listenerElement: EventTarget): void {
     ((
       event: WebNoteOffCustomEvent,
     ) => {
-      webNoteOff(event.detail.uuid);
+      webNotePlayerOff(event.detail.uuid);
     }) as EventListenerOrEventListenerObject,
   );
 }
@@ -200,7 +200,7 @@ function getClosestSpriteNoteData(
   instrumentAudio: string,
   midiNoteNumber: number,
 ): AudioSpriteNoteData {
-  const instrumentData = audioSpriteInstruments?.[instrumentAudio];
+  const instrumentData = audioSpriteInstrumentsData?.[instrumentAudio];
 
   if (instrumentData === undefined) {
     throw new TypeError(
@@ -298,7 +298,7 @@ function getClosestSpriteNoteData(
  *
  * If `noteDuration` is `undefined`, the note will loop indefinitely if `loopStart`
  * and `loopEnd` are defined in the `SpriteNoteData`, and a `uuid` **must** be provided
- * to allow the note to be stopped later via `webNoteOff`.
+ * to allow the note to be stopped later via `webNotePlayerOff`.
  * For finite durations, a fade-out is applied to prevent clicks.
  *
  * @param {string} instrumentAudio - The name of the instrument (e.g., "guitar") to play.
@@ -306,14 +306,14 @@ function getClosestSpriteNoteData(
  * @param {string} [uuid] - A unique identifier for the note instance. **Required** if `noteDuration` is `undefined`
  * to enable stopping the note.
  * @param {number} [noteDuration=1] - The desired duration of the note in seconds.
- * If `undefined`, the note will attempt to loop indefinitely until `webNoteOff` is called.
+ * If `undefined`, the note will attempt to loop indefinitely until `webNotePlayerOff` is called.
  * @param {number} [noteVolume=0.6] - The volume of the note, a linear gain value from 0 (silent) to 1 (full volume).
  * @param {number} [noteDelay=0] - The delay in seconds before the note starts playing, relative to the current `AudioContext` time.
  * @returns {void}
  * @throws {Error} If `getClosestSpriteNoteData` fails or `webNoteAudioContext` or `audioSpriteBuffer`
  * is not initialized.
  */
-function webNoteOn(
+function webNotePlayerOn(
   instrumentAudio: string,
   midiNoteNumber: number,
   uuid: string | undefined = undefined,
@@ -398,7 +398,7 @@ function webNoteOn(
  * @param {string} uuid - The unique identifier of the note instance to stop.
  * @returns {void}
  */
-function webNoteOff(uuid: string): void {
+function webNotePlayerOff(uuid: string): void {
   if (!webNoteAudioContext) {
     console.error("The Audio Context was not initialized properly.");
     return;
