@@ -8,7 +8,6 @@ see ICMT chunk or Debian source package musescore-general-soundfont (= 0.2.1-1) 
 MuseScore_General by S. Christian Collins; 
 based on Fluid (R3) Mono GM by Church Organist; based on Fluid (R3) SoundFont by Frank Wen
 
-
-A copy of the specific license notice for this asset can also be found at:
+A copy of the specific license notice for this asset can be found at:
 ./examples/COPYRIGHT-NOTICE.txt
 
