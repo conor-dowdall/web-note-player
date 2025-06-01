@@ -7,30 +7,11 @@
  */
 
 /**
- * Interface for the overall audio sprite data structure.
- * This aggregates the URL of the sprite and the data for all instruments.
- */
-export interface AudioSpriteData {
-  /**
-   * The URL to the audio sprite file (e.g., an OGG file).
-   * Note: MP3s has timing issues when exported from WAVs.
-   */
-  url: string;
-  /**
-   * An object containing data for all instruments in the sprite,
-   * where keys are instrument names.
-   * The `AudioSpriteNoteData` arrays within each instrument must be
-   * sorted by `midiNoteRangeStart`.
-   */
-  instruments: AudioSpriteInstruments;
-}
-
-/**
  * Interface for the collection of instruments within the audio sprite data.
  * Each key is an instrument name, and its value is an array of `AudioSpriteNoteData`.
  * The `AudioSpriteNoteData` arrays for each instrument must be sorted by `midiNoteRangeStart`.
  */
-export interface AudioSpriteInstruments {
+export interface AudioSpriteInstrumentsData {
   /**
    * A string index signature allowing dynamic instrument names.
    * @type {AudioSpriteNoteData[]}
