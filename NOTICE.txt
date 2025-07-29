@@ -1,0 +1,13 @@
+This project, "WebNotePlayer", incorporates assets from third parties.
+The following notices are required for compliance with their respective licenses:
+
+examples/nylon-guitar-audio-sprite.ogg uses samples from: MuseScore_General_Full.sf2 (MuseScore_General_HQ v0.2.1)
+Copyright (c) Frank Wen, Michael Cowgill, S. Christian Collins and others; 
+see ICMT chunk or Debian source package musescore-general-soundfont (= 0.2.1-1) for entire terms and the MIT licence
+
+MuseScore_General by S. Christian Collins; 
+based on Fluid (R3) Mono GM by Church Organist; based on Fluid (R3) SoundFont by Frank Wen
+
+A copy of the specific license notice for this asset can be found at:
+./examples/COPYRIGHT-NOTICE.txt
+
